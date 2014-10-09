@@ -1,0 +1,11 @@
+<component name="libraryTable">
+  <library name="asm-1.0">
+    <CLASSES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.minidev/asm/1.0/305a2f988bfa03ddaa64c6fd517890a315366344/asm-1.0.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/net.minidev/asm/1.0/c9d1d4363fb43b0e884589e1c9b71a6743ba34e7/asm-1.0-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
