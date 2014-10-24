@@ -1,11 +1,16 @@
 package com.jorose.initialimpression;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -26,6 +31,7 @@ import com.google.api.client.http.javanet.NetHttpTransport;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -42,6 +48,13 @@ public class GameHome extends Activity {
     private ListView list;
     private ArrayList<Guess> arrayOfGuesses;
     private GuessesAdapter adapter;
+    private MediaPlayer clockSound;
+    private MediaPlayer correctSound;
+    private MediaPlayer wrongSound;
+    private MediaPlayer endSound;
+    private MediaPlayer highSound;
+    private int scoreNum;
+    private int curScore;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +92,21 @@ public class GameHome extends Activity {
             }
         });
 
+        clockSound = MediaPlayer.create(this, R.raw.ticktock);
+        clockSound.setLooping(true);
+
+        correctSound = MediaPlayer.create(this, R.raw.right);
+        wrongSound = MediaPlayer.create(this, R.raw.wrong);
+        endSound = MediaPlayer.create(this, R.raw.end);
+        highSound = MediaPlayer.create(this, R.raw.triumph);
+
+        //get high score
+        //getting preferences
+        SharedPreferences prefs = this.getSharedPreferences("highScore", Context.MODE_PRIVATE);
+        scoreNum = prefs.getInt("score", 0); //0 is the default value
+        TextView hText = (TextView) findViewById(R.id.highScore);
+        hText.setText("Current High Score: " + String.valueOf(scoreNum));
+
     }
 
     private class PersonSearch extends AsyncTask<String, Void, String> {
@@ -110,7 +138,14 @@ public class GameHome extends Activity {
                     JSONArray results = (JSONArray) response.get("result");
 
                     if (results.size() > 0) {
-                        personTrue = true;
+                        personTrue = false;
+                        for (int j = 0; j < results.size(); j++) {
+                            JSONObject obj = (JSONObject) results.get(j);
+                            String name = (String) obj.get("name");
+                            if (name.equals(params[0])) {
+                                personTrue = true;
+                            }
+                        }
                     } else {
                         personTrue = false;
                     }
@@ -138,8 +173,20 @@ public class GameHome extends Activity {
 
                 EditText uText = (EditText) findViewById(R.id.searchName);
                 Guess newGuess = new Guess(uText.getText().toString(), personTrue);
-                adapter.add(newGuess);
+                adapter.insert(newGuess, 0);
                 uText.setText("");
+
+                if (personTrue) {
+                    correctSound.start();
+                    EditText scoreText = (EditText) findViewById(R.id.scoreText);
+                    curScore = Integer.parseInt(scoreText.getText().toString());
+                    curScore ++;
+                    scoreText.setText(String.valueOf(curScore));
+                } else {
+                    wrongSound.start();
+                }
+
+
 
 
             }catch(Exception E){
@@ -168,6 +215,42 @@ public class GameHome extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    private String formatTime(long millis){
+
+        return String.format("%02d:%02d:%02d",
+                TimeUnit.MILLISECONDS.toHours(millis),
+                TimeUnit.MILLISECONDS.toMinutes(millis) -
+                        TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis)),
+                TimeUnit.MILLISECONDS.toSeconds(millis) -
+                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis)));
+
+    }
+
+    private void checkHighScore() {
+        TextView hText = (TextView) findViewById(R.id.highScore);
+        String prefix = "Current ";
+        if (curScore > scoreNum){
+            SharedPreferences prefs = this.getSharedPreferences("highScore", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            editor.putInt("score", curScore);
+            editor.commit();
+            scoreNum = curScore;
+            prefix = "NEW!!! ";
+            highSound.start();
+        }
+        hText.setText(prefix + "High Score: " + String.valueOf(scoreNum));
+    }
+
+    private void hideKeyboard() {
+        InputMethodManager inputManager = (InputMethodManager) this.getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        // check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            inputManager.hideSoftInputFromWindow(view.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        }
+    }
+
     private String getRandomLetters() {
         Random rnd = new Random();
         int numLetters = 2;
@@ -185,6 +268,39 @@ public class GameHome extends Activity {
             }
         }
 
+        EditText scoreText = (EditText) findViewById(R.id.scoreText);
+        scoreText.setText("0");
+
+
+        Button search = (Button) findViewById(R.id.searchButton);
+        search.setEnabled(true);
+
+        clockSound.start();
+
+        new CountDownTimer(90000, 1000) {
+
+            TextView tText = (TextView) findViewById(R.id.timeBox);
+
+            public void onTick(long millisUntilFinished) {
+
+                tText.setText(formatTime(millisUntilFinished));
+            }
+
+            public void onFinish() {
+                tText.setText("Time's Up!");
+                Button search = (Button) findViewById(R.id.searchButton);
+                search.setEnabled(false);
+                clockSound.pause();
+                clockSound.seekTo(0);
+                endSound.start();
+                hideKeyboard();
+
+                //check score
+                checkHighScore();
+            }
+        }.start();
+
+        curScore = 0;
         return initials;
     }
 }

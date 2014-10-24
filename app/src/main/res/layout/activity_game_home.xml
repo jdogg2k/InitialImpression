@@ -15,7 +15,7 @@
 
         <LinearLayout
             android:orientation="horizontal"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content">
 
             <Button
@@ -24,12 +24,20 @@
                 android:text="Generate Initials"
                 android:id="@+id/initialGenerator"
                 android:singleLine="true" />
-
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
             <TextView
-                android:layout_width="fill_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceLarge"
-                android:id="@+id/textInitials" />
+                android:id="@+id/textInitials"
+                android:gravity="fill_horizontal|center_horizontal"
+                android:textSize="40dp"
+                android:textIsSelectable="false"
+                android:layout_gravity="center|left" />
+
         </LinearLayout>
 
         <LinearLayout
@@ -42,10 +50,52 @@
             android:inputType="textCapWords"
             android:id="@+id/searchName"/>
         <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="48dp"
+            android:layout_height="34dp"
             android:text="GO"
-            android:id="@+id/searchButton"/>
+            android:id="@+id/searchButton"
+            android:textSize="14dp" />
+
+            <EditText
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/scoreText"
+                android:textColor="#ff1f6f2c"
+                android:textSize="14dp"
+                android:textStyle="bold"
+                android:textIsSelectable="true"
+                android:enabled="false"
+                android:focusable="true"
+                android:editable="true"
+                android:text="0" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:text="Current High Score: "
+                android:id="@+id/highScore"
+                android:textColor="#ff3150b6"
+                android:layout_gravity="center"
+                android:textSize="14dp"
+                android:textStyle="bold" />
+            <Space
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:id="@+id/timeBox"
+                android:text=""
+                android:singleLine="true" />
         </LinearLayout>
 
         <ListView android:layout_width="fill_parent"
